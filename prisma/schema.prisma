@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model University {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  groups    Group[]
+  teachers  Teacher[]
+}
+
+model Group {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  slug         String     @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  university   University @relation(fields: [universityId], references: [id])
+  universityId String     @db.ObjectId
+  subjects     Subject[]
+  events       Event[]
+}
+
+model Teacher {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  slug         String     @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  university   University @relation(fields: [universityId], references: [id])
+  universityId String     @db.ObjectId
+  events       Event[]
+}
+
+model Subject {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  nameRaw   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  group     Group    @relation(fields: [groupId], references: [id])
+  groupId   String   @db.ObjectId
+  events    Event[]
+}
+
+model Event {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  startAt     DateTime
+  endAt       DateTime
+  description String?
+  sourceId    Int      @default(0)
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  subjectId   String   @db.ObjectId
+  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     String   @db.ObjectId
+  teacher     Teacher? @relation(fields: [teacherId], references: [id])
+  teacherId   String?  @db.ObjectId
+}
